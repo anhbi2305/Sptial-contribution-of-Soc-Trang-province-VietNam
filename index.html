@@ -1,0 +1,2827 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>Khmer pagodas in Soc Trang</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/leaflet-search.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/tinh_2.js"></script>
+        <script src="data/Huyen_3.js"></script>
+        <script src="data/Duong_4.js"></script>
+        <script src="data/Sng_5.js"></script>
+        <script src="data/Phanhang_6.js"></script>
+        <script src="data/Chuatheohuyen_7.js"></script>
+        <script src="data/chua_8.js"></script>
+        <script src="data/tuoi_9.js"></script>
+        <script src="data/nuoc_10.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ff1928',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ff1928',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var title = new L.Control({'position':'topright'});
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        title.update = function () {
+            this._div.innerHTML = '<h2>Khmer pagodas in Soc Trang</h2>';
+        };
+        title.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'feet',
+            secondaryLengthUnit: 'miles',
+            primaryAreaUnit: 'sqfeet',
+            secondaryAreaUnit: 'sqmiles'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+        }
+        map.createPane('pane_Positronretina_0');
+        map.getPane('pane_Positronretina_0').style.zIndex = 400;
+        var layer_Positronretina_0 = L.tileLayer('https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png', {
+            pane: 'pane_Positronretina_0',
+            opacity: 1.0,
+            attribution: '<a href="https://cartodb.com/basemaps/">Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_Positronretina_0;
+        map.addLayer(layer_Positronretina_0);
+        map.createPane('pane_OpenStreetMap_1');
+        map.getPane('pane_OpenStreetMap_1').style.zIndex = 401;
+        var layer_OpenStreetMap_1 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OpenStreetMap_1',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OpenStreetMap_1;
+        map.addLayer(layer_OpenStreetMap_1);
+        function pop_tinh_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GID_0'] !== null ? autolinker.link(String(feature.properties['GID_0']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NAME_0'] !== null ? autolinker.link(String(feature.properties['NAME_0']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['GID_1'] !== null ? autolinker.link(String(feature.properties['GID_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NAME_1'] !== null ? autolinker.link(String(feature.properties['NAME_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['VARNAME_1'] !== null ? autolinker.link(String(feature.properties['VARNAME_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NL_NAME_1'] !== null ? autolinker.link(String(feature.properties['NL_NAME_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['TYPE_1'] !== null ? autolinker.link(String(feature.properties['TYPE_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ENGTYPE_1'] !== null ? autolinker.link(String(feature.properties['ENGTYPE_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['CC_1'] !== null ? autolinker.link(String(feature.properties['CC_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['HASC_1'] !== null ? autolinker.link(String(feature.properties['HASC_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_tinh_2_0() {
+            return {
+                pane: 'pane_tinh_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,154,153,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_tinh_2');
+        map.getPane('pane_tinh_2').style.zIndex = 402;
+        map.getPane('pane_tinh_2').style['mix-blend-mode'] = 'normal';
+        var layer_tinh_2 = new L.geoJson(json_tinh_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_tinh_2',
+            layerName: 'layer_tinh_2',
+            pane: 'pane_tinh_2',
+            onEachFeature: pop_tinh_2,
+            style: style_tinh_2_0,
+        });
+        bounds_group.addLayer(layer_tinh_2);
+        map.addLayer(layer_tinh_2);
+        function pop_Huyen_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ID_0'] !== null ? autolinker.link(String(feature.properties['ID_0']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ISO'] !== null ? autolinker.link(String(feature.properties['ISO']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NAME_0'] !== null ? autolinker.link(String(feature.properties['NAME_0']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ID_1'] !== null ? autolinker.link(String(feature.properties['ID_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NAME_1'] !== null ? autolinker.link(String(feature.properties['NAME_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ID_2'] !== null ? autolinker.link(String(feature.properties['ID_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NAME_2'] !== null ? autolinker.link(String(feature.properties['NAME_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['TYPE_2'] !== null ? autolinker.link(String(feature.properties['TYPE_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ENGTYPE_2'] !== null ? autolinker.link(String(feature.properties['ENGTYPE_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NL_NAME_2'] !== null ? autolinker.link(String(feature.properties['NL_NAME_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['VARNAME_2'] !== null ? autolinker.link(String(feature.properties['VARNAME_2']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Huyen_3_0(feature) {
+            switch(String(feature.properties['NAME_2'])) {
+                case 'Châu Thành':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(215,25,28,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cù Lao Dung':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(232,91,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Kế Sách':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(249,157,89,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Long My':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,201,128,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Long Phú':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,237,170,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mỹ Tú':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(236,247,185,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mỹ Xuyên':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(199,232,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ngã Năm':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(157,211,166,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Thanh Trì':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(100,171,176,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vĩnh Châu':
+                    return {
+                pane: 'pane_Huyen_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(43,131,186,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Huyen_3');
+        map.getPane('pane_Huyen_3').style.zIndex = 403;
+        map.getPane('pane_Huyen_3').style['mix-blend-mode'] = 'normal';
+        var layer_Huyen_3 = new L.geoJson(json_Huyen_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Huyen_3',
+            layerName: 'layer_Huyen_3',
+            pane: 'pane_Huyen_3',
+            onEachFeature: pop_Huyen_3,
+            style: style_Huyen_3_0,
+        });
+        bounds_group.addLayer(layer_Huyen_3);
+        map.addLayer(layer_Huyen_3);
+        function pop_Duong_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(String(feature.properties['id']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Duong_4_0() {
+            return {
+                pane: 'pane_Duong_4',
+                opacity: 1,
+                color: 'rgba(255,25,40,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'bevel',
+                weight: 3.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Duong_4');
+        map.getPane('pane_Duong_4').style.zIndex = 404;
+        map.getPane('pane_Duong_4').style['mix-blend-mode'] = 'normal';
+        var layer_Duong_4 = new L.geoJson(json_Duong_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Duong_4',
+            layerName: 'layer_Duong_4',
+            pane: 'pane_Duong_4',
+            onEachFeature: pop_Duong_4,
+            style: style_Duong_4_0,
+        });
+        bounds_group.addLayer(layer_Duong_4);
+        map.addLayer(layer_Duong_4);
+        function pop_Sng_5(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(String(feature.properties['id']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Sng_5_0() {
+            return {
+                pane: 'pane_Sng_5',
+                opacity: 1,
+                color: 'rgba(166,206,227,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 7.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Sng_5');
+        map.getPane('pane_Sng_5').style.zIndex = 405;
+        map.getPane('pane_Sng_5').style['mix-blend-mode'] = 'normal';
+        var layer_Sng_5 = new L.geoJson(json_Sng_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Sng_5',
+            layerName: 'layer_Sng_5',
+            pane: 'pane_Sng_5',
+            onEachFeature: pop_Sng_5,
+            style: style_Sng_5_0,
+        });
+        bounds_group.addLayer(layer_Sng_5);
+        map.addLayer(layer_Sng_5);
+        function pop_Phanhang_6(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Y'] !== null ? autolinker.link(String(feature.properties['Y']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['x'] !== null ? autolinker.link(String(feature.properties['x']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['STT'] !== null ? autolinker.link(String(feature.properties['STT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name Khmer'] !== null ? autolinker.link(String(feature.properties['Name Khmer']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Vietsub'] !== null ? autolinker.link(String(feature.properties['Vietsub']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Building'] !== null ? autolinker.link(String(feature.properties['Building']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Address'] !== null ? autolinker.link(String(feature.properties['Address']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['old'] !== null ? autolinker.link(String(feature.properties['old']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Classifica'] !== null ? autolinker.link(String(feature.properties['Classifica']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Huyen'] !== null ? autolinker.link(String(feature.properties['Huyen']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Range age'] !== null ? autolinker.link(String(feature.properties['Range age']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Phanhang_6_0(feature) {
+            switch(String(feature.properties['Classifica'])) {
+                case 'Cấp quốc gia':
+                    return {
+                pane: 'pane_Phanhang_6',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(208,36,239,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Cấp tỉnh':
+                    return {
+                pane: 'pane_Phanhang_6',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(47,216,14,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chưa phân hạng':
+                    return {
+                pane: 'pane_Phanhang_6',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(25,158,224,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Phanhang_6');
+        map.getPane('pane_Phanhang_6').style.zIndex = 406;
+        map.getPane('pane_Phanhang_6').style['mix-blend-mode'] = 'normal';
+        var layer_Phanhang_6 = new L.geoJson(json_Phanhang_6, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Phanhang_6',
+            layerName: 'layer_Phanhang_6',
+            pane: 'pane_Phanhang_6',
+            onEachFeature: pop_Phanhang_6,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Phanhang_6_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Phanhang_6);
+        map.addLayer(layer_Phanhang_6);
+        function pop_Chuatheohuyen_7(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Y'] !== null ? autolinker.link(String(feature.properties['Y']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['x'] !== null ? autolinker.link(String(feature.properties['x']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['STT'] !== null ? autolinker.link(String(feature.properties['STT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name Khmer'] !== null ? autolinker.link(String(feature.properties['Name Khmer']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Vietsub'] !== null ? autolinker.link(String(feature.properties['Vietsub']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Building'] !== null ? autolinker.link(String(feature.properties['Building']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Address'] !== null ? autolinker.link(String(feature.properties['Address']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['old'] !== null ? autolinker.link(String(feature.properties['old']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Classifica'] !== null ? autolinker.link(String(feature.properties['Classifica']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Huyen'] !== null ? autolinker.link(String(feature.properties['Huyen']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Range age'] !== null ? autolinker.link(String(feature.properties['Range age']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Chuatheohuyen_7_0(feature) {
+            switch(String(feature.properties['Huyen'])) {
+                case 'HUYỆN CHÂU THÀNH':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(50,234,197,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN KẾ SÁCH':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,76,137,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN LONG PHÚ':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(226,148,21,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN MỸ TÚ':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(18,145,214,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN MỸ XUYÊN':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(125,228,80,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN NGÃ NĂM':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(196,227,23,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN THẠNH TRỊ':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(137,75,218,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN TRẦN ĐỀ':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(204,69,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'THÀNH PHỐ SÓC TRĂNG':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(24,217,75,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'THỊ XÃ VĨNH CHÂU':
+                    return {
+                pane: 'pane_Chuatheohuyen_7',
+                radius: 10.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,93,209,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Chuatheohuyen_7');
+        map.getPane('pane_Chuatheohuyen_7').style.zIndex = 407;
+        map.getPane('pane_Chuatheohuyen_7').style['mix-blend-mode'] = 'normal';
+        var layer_Chuatheohuyen_7 = new L.geoJson(json_Chuatheohuyen_7, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Chuatheohuyen_7',
+            layerName: 'layer_Chuatheohuyen_7',
+            pane: 'pane_Chuatheohuyen_7',
+            onEachFeature: pop_Chuatheohuyen_7,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Chuatheohuyen_7_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Chuatheohuyen_7);
+        map.addLayer(layer_Chuatheohuyen_7);
+        function pop_chua_8(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Name Khmer</th>\
+                        <td>' + (feature.properties['Name Khmer'] !== null ? autolinker.link(String(feature.properties['Name Khmer']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Building</th>\
+                        <td>' + (feature.properties['Building'] !== null ? autolinker.link(String(feature.properties['Building']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Huyen</th>\
+                        <td>' + (feature.properties['Huyen'] !== null ? autolinker.link(String(feature.properties['Huyen']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Range age</th>\
+                        <td>' + (feature.properties['Range age'] !== null ? autolinker.link(String(feature.properties['Range age']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_chua_8_0(feature) {
+            switch(String(feature.properties['q2wHide_old'])) {
+                case '21':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(118,238,170,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '22':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(138,47,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '34':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,38,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '50':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,104,219,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '52':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(156,224,132,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '53':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,175,116,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '54':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,229,118,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '58':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,139,107,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '60':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,95,235,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '61':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,213,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '62':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(185,87,223,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '68':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(127,213,144,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '70':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(226,74,94,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '71':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(125,46,211,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '72':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(206,58,66,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '74':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(218,41,215,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '77':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(205,72,110,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '88':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(125,81,228,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '111':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,36,202,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '115':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(36,202,174,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '124':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(60,230,122,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '126':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(17,211,192,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '129':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(57,204,76,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '130':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(104,134,232,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '131':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(17,206,26,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '132':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(22,230,147,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '135':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(198,77,204,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '136':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,159,28,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '138':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(105,202,56,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '141':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(109,130,237,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '144':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(223,227,121,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '152':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(175,95,222,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '153':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(123,196,207,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '159':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(31,236,24,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '162':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(50,222,139,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '165':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,238,60,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '182':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(112,84,201,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '188':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(166,202,23,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '195':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(38,218,231,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '210':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(65,229,226,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '221':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,74,171,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '225':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(24,122,203,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '227':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,175,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '242':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(174,211,127,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '245':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,84,70,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '246':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(133,202,118,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '252':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,199,34,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '254':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(46,123,211,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '275':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(58,184,219,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '276':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,151,95,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '287':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(230,125,179,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '298':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(233,228,98,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '300':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(204,50,166,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '319':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(92,70,217,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '331':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,44,124,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '347':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,123,235,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '349':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(120,127,208,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '350':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(201,227,129,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '357':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(211,136,60,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '359':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(139,133,226,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '361':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(75,172,228,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '377':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(75,75,201,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '404':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,132,222,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '407':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(239,120,93,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '410':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(112,35,236,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '416':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,170,98,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '440':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(126,202,72,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '449':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(126,216,194,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '456':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(56,230,172,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '488':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,29,97,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '492':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(213,100,168,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '518':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,120,138,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '523':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(119,214,24,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '530':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(201,39,174,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '560':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(13,222,72,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '801':
+                    return {
+                pane: 'pane_chua_8',
+                radius: 6.8,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,72,19,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_chua_8');
+        map.getPane('pane_chua_8').style.zIndex = 408;
+        map.getPane('pane_chua_8').style['mix-blend-mode'] = 'normal';
+        var layer_chua_8 = new L.geoJson(json_chua_8, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_chua_8',
+            layerName: 'layer_chua_8',
+            pane: 'pane_chua_8',
+            onEachFeature: pop_chua_8,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_chua_8_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_chua_8);
+        map.addLayer(layer_chua_8);
+        function pop_tuoi_9(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">name</th>\
+                        <td>' + (feature.properties['Name Khmer'] !== null ? autolinker.link(String(feature.properties['Name Khmer']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">year of constrcution</th>\
+                        <td>' + (feature.properties['Building'] !== null ? autolinker.link(String(feature.properties['Building']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Address</th>\
+                        <td>' + (feature.properties['Address'] !== null ? autolinker.link(String(feature.properties['Address']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">phanhang</th>\
+                        <td>' + (feature.properties['Classifica'] !== null ? autolinker.link(String(feature.properties['Classifica']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">range age</th>\
+                        <td>' + (feature.properties['Range age'] !== null ? autolinker.link(String(feature.properties['Range age']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_tuoi_9_0(feature) {
+            switch(String(feature.properties['Range age'])) {
+                case '<50':
+                    return {
+                pane: 'pane_tuoi_9',
+                radius: 8.4,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(186,205,124,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '>500':
+                    return {
+                pane: 'pane_tuoi_9',
+                radius: 8.4,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,135,110,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '100-300':
+                    return {
+                pane: 'pane_tuoi_9',
+                radius: 8.4,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(17,236,68,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '300-500':
+                    return {
+                pane: 'pane_tuoi_9',
+                radius: 8.4,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(112,181,202,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '50-100':
+                    return {
+                pane: 'pane_tuoi_9',
+                radius: 8.4,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(128,104,208,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_tuoi_9');
+        map.getPane('pane_tuoi_9').style.zIndex = 409;
+        map.getPane('pane_tuoi_9').style['mix-blend-mode'] = 'normal';
+        var layer_tuoi_9 = new L.geoJson(json_tuoi_9, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_tuoi_9',
+            layerName: 'layer_tuoi_9',
+            pane: 'pane_tuoi_9',
+            onEachFeature: pop_tuoi_9,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_tuoi_9_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_tuoi_9);
+        map.addLayer(layer_tuoi_9);
+        function pop_nuoc_10(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">ISO</th>\
+                        <td>' + (feature.properties['ISO'] !== null ? autolinker.link(String(feature.properties['ISO']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">COUNTRY</th>\
+                        <td>' + (feature.properties['COUNTRY'] !== null ? autolinker.link(String(feature.properties['COUNTRY']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">F_CODE_DES</th>\
+                        <td>' + (feature.properties['F_CODE_DES'] !== null ? autolinker.link(String(feature.properties['F_CODE_DES']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">HYC_DESCRI</th>\
+                        <td>' + (feature.properties['HYC_DESCRI'] !== null ? autolinker.link(String(feature.properties['HYC_DESCRI']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NAME</th>\
+                        <td>' + (feature.properties['NAME'] !== null ? autolinker.link(String(feature.properties['NAME']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_nuoc_10_0() {
+            return {
+                pane: 'pane_nuoc_10',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(31,120,180,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_nuoc_10');
+        map.getPane('pane_nuoc_10').style.zIndex = 410;
+        map.getPane('pane_nuoc_10').style['mix-blend-mode'] = 'normal';
+        var layer_nuoc_10 = new L.geoJson(json_nuoc_10, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_nuoc_10',
+            layerName: 'layer_nuoc_10',
+            pane: 'pane_nuoc_10',
+            onEachFeature: pop_nuoc_10,
+            style: style_nuoc_10_0,
+        });
+        bounds_group.addLayer(layer_nuoc_10);
+        map.addLayer(layer_nuoc_10);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var overlaysTree = [
+            {label: '<img src="legend/nuoc_10.png" /> nuoc', layer: layer_nuoc_10},
+            {label: 'tuoi<br /><table><tr><td style="text-align: center;"><img src="legend/tuoi_9_500.png" /></td><td><50</td></tr><tr><td style="text-align: center;"><img src="legend/tuoi_9_5001.png" /></td><td>>500</td></tr><tr><td style="text-align: center;"><img src="legend/tuoi_9_1003002.png" /></td><td>100-300</td></tr><tr><td style="text-align: center;"><img src="legend/tuoi_9_3005003.png" /></td><td>300-500</td></tr><tr><td style="text-align: center;"><img src="legend/tuoi_9_501004.png" /></td><td>50-100</td></tr></table>', layer: layer_tuoi_9},
+            {label: 'chua<br /><table><tr><td style="text-align: center;"><img src="legend/chua_8_210.png" /></td><td>21</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_221.png" /></td><td>22</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_342.png" /></td><td>34</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_503.png" /></td><td>50</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_524.png" /></td><td>52</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_535.png" /></td><td>53</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_546.png" /></td><td>54</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_587.png" /></td><td>58</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_608.png" /></td><td>60</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_619.png" /></td><td>61</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_6210.png" /></td><td>62</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_6811.png" /></td><td>68</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_7012.png" /></td><td>70</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_7113.png" /></td><td>71</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_7214.png" /></td><td>72</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_7415.png" /></td><td>74</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_7716.png" /></td><td>77</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_8817.png" /></td><td>88</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_11118.png" /></td><td>111</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_11519.png" /></td><td>115</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_12420.png" /></td><td>124</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_12621.png" /></td><td>126</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_12922.png" /></td><td>129</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_13023.png" /></td><td>130</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_13124.png" /></td><td>131</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_13225.png" /></td><td>132</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_13526.png" /></td><td>135</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_13627.png" /></td><td>136</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_13828.png" /></td><td>138</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_14129.png" /></td><td>141</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_14430.png" /></td><td>144</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_15231.png" /></td><td>152</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_15332.png" /></td><td>153</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_15933.png" /></td><td>159</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_16234.png" /></td><td>162</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_16535.png" /></td><td>165</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_18236.png" /></td><td>182</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_18837.png" /></td><td>188</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_19538.png" /></td><td>195</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_21039.png" /></td><td>210</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_22140.png" /></td><td>221</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_22541.png" /></td><td>225</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_22742.png" /></td><td>227</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_24243.png" /></td><td>242</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_24544.png" /></td><td>245</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_24645.png" /></td><td>246</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_25246.png" /></td><td>252</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_25447.png" /></td><td>254</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_27548.png" /></td><td>275</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_27649.png" /></td><td>276</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_28750.png" /></td><td>287</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_29851.png" /></td><td>298</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_30052.png" /></td><td>300</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_31953.png" /></td><td>319</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_33154.png" /></td><td>331</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_34755.png" /></td><td>347</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_34956.png" /></td><td>349</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_35057.png" /></td><td>350</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_35758.png" /></td><td>357</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_35959.png" /></td><td>359</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_36160.png" /></td><td>361</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_37761.png" /></td><td>377</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_40462.png" /></td><td>404</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_40763.png" /></td><td>407</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_41064.png" /></td><td>410</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_41665.png" /></td><td>416</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_44066.png" /></td><td>440</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_44967.png" /></td><td>449</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_45668.png" /></td><td>456</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_48869.png" /></td><td>488</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_49270.png" /></td><td>492</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_51871.png" /></td><td>518</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_52372.png" /></td><td>523</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_53073.png" /></td><td>530</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_56074.png" /></td><td>560</td></tr><tr><td style="text-align: center;"><img src="legend/chua_8_80175.png" /></td><td>801</td></tr></table>', layer: layer_chua_8},
+            {label: 'Chua theo huyen<br /><table><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_HUYỆNCHÂUTHÀNH0.png" /></td><td>HUYỆN CHÂU THÀNH</td></tr><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_HUYỆNKẾSÁCH1.png" /></td><td>HUYỆN KẾ SÁCH</td></tr><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_HUYỆNLONGPHÚ2.png" /></td><td>HUYỆN LONG PHÚ</td></tr><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_HUYỆNMỸTÚ3.png" /></td><td>HUYỆN MỸ TÚ</td></tr><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_HUYỆNMỸXUYÊN4.png" /></td><td>HUYỆN MỸ XUYÊN</td></tr><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_HUYỆNNGÃNĂM5.png" /></td><td>HUYỆN NGÃ NĂM</td></tr><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_HUYỆNTHẠNHTRỊ6.png" /></td><td>HUYỆN THẠNH TRỊ</td></tr><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_HUYỆNTRẦNĐỀ7.png" /></td><td>HUYỆN TRẦN ĐỀ</td></tr><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_THÀNHPHỐSÓCTRĂNG8.png" /></td><td>THÀNH PHỐ SÓC TRĂNG</td></tr><tr><td style="text-align: center;"><img src="legend/Chuatheohuyen_7_THỊXÃVĨNHCHÂU9.png" /></td><td>THỊ XÃ VĨNH CHÂU</td></tr></table>', layer: layer_Chuatheohuyen_7},
+            {label: 'Phan hang<br /><table><tr><td style="text-align: center;"><img src="legend/Phanhang_6_Cấpquốcgia0.png" /></td><td>Cấp quốc gia</td></tr><tr><td style="text-align: center;"><img src="legend/Phanhang_6_Cấptỉnh1.png" /></td><td>Cấp tỉnh</td></tr><tr><td style="text-align: center;"><img src="legend/Phanhang_6_Chưaphânhạng2.png" /></td><td>Chưa phân hạng</td></tr></table>', layer: layer_Phanhang_6},
+            {label: '<img src="legend/Sng_5.png" /> Sông', layer: layer_Sng_5},
+            {label: '<img src="legend/Duong_4.png" /> Duong', layer: layer_Duong_4},
+            {label: 'Huyen<br /><table><tr><td style="text-align: center;"><img src="legend/Huyen_3_ChâuThành0.png" /></td><td>Châu Thành</td></tr><tr><td style="text-align: center;"><img src="legend/Huyen_3_CùLaoDung1.png" /></td><td>Cù Lao Dung</td></tr><tr><td style="text-align: center;"><img src="legend/Huyen_3_KếSách2.png" /></td><td>Kế Sách</td></tr><tr><td style="text-align: center;"><img src="legend/Huyen_3_LongMy3.png" /></td><td>Long My</td></tr><tr><td style="text-align: center;"><img src="legend/Huyen_3_LongPhú4.png" /></td><td>Long Phú</td></tr><tr><td style="text-align: center;"><img src="legend/Huyen_3_MỹTú5.png" /></td><td>Mỹ Tú</td></tr><tr><td style="text-align: center;"><img src="legend/Huyen_3_MỹXuyên6.png" /></td><td>Mỹ Xuyên</td></tr><tr><td style="text-align: center;"><img src="legend/Huyen_3_NgãNăm7.png" /></td><td>Ngã Năm</td></tr><tr><td style="text-align: center;"><img src="legend/Huyen_3_ThanhTrì8.png" /></td><td>Thanh Trì</td></tr><tr><td style="text-align: center;"><img src="legend/Huyen_3_VĩnhChâu9.png" /></td><td>Vĩnh Châu</td></tr></table>', layer: layer_Huyen_3},
+            {label: '<img src="legend/tinh_2.png" /> tinh', layer: layer_tinh_2},
+            {label: "OpenStreetMap", layer: layer_OpenStreetMap_1},
+            {label: "Positron (retina)", layer: layer_Positronretina_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+		document.addEventListener("DOMContentLoaded", function() {
+            // set new Layers List height which considers toggle icon
+            function newLayersListHeight() {
+                var layerScrollbarElement = document.querySelector('.leaflet-control-layers-scrollbar');
+                if (layerScrollbarElement) {
+                    var layersListElement = document.querySelector('.leaflet-control-layers-list');
+                    var originalHeight = layersListElement.style.height 
+                        || window.getComputedStyle(layersListElement).height;
+                    var newHeight = parseFloat(originalHeight) - 50;
+                    layersListElement.style.height = newHeight + 'px';
+                }
+            }
+            var isLayersListExpanded = true;
+            var controlLayersElement = document.querySelector('.leaflet-control-layers');
+            var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
+            // toggle Collapsed/Expanded and apply new Layers List height
+            toggleLayerControl.addEventListener('click', function() {
+                if (isLayersListExpanded) {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                } else {
+                    controlLayersElement.classList.add('leaflet-control-layers-expanded');
+                }
+                isLayersListExpanded = !isLayersListExpanded;
+                newLayersListHeight()
+            });	
+			// apply new Layers List height if toggle layerstree
+			if (controlLayersElement) {
+				controlLayersElement.addEventListener('click', function(event) {
+					var toggleLayerHeaderPointer = event.target.closest('.leaflet-layerstree-header-pointer span');
+					if (toggleLayerHeaderPointer) {
+						newLayersListHeight();
+					}
+				});
+			}
+            // Collapsed/Expanded at Start to apply new height
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            // Collapsed touch/small screen
+            var isSmallScreen = window.innerWidth < 650;
+            if (isSmallScreen) {
+                setTimeout(function() {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                    isLayersListExpanded = !isLayersListExpanded;
+                }, 500);
+            }  
+        });       
+        setBounds();
+        var i = 0;
+        layer_Huyen_3.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['NAME_2'] !== null?String('<div style="color: #000000; font-size: 16pt; font-weight: bold; font-family: \'Times New Roman\', sans-serif;">' + layer.feature.properties['NAME_2']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Huyen_3'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        map.addControl(new L.Control.Search({
+            layer: layer_Phanhang_6,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            propertyName: 'old'}));
+        document.getElementsByClassName('search-button')[0].className +=
+         ' fa fa-binoculars';
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"Range age": "str","Huyen": "str","Classifica": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+        var i = 0;
+        layer_Huyen_3.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['NAME_2'] !== null?String('<div style="color: #000000; font-size: 16pt; font-weight: bold; font-family: \'Times New Roman\', sans-serif;">' + layer.feature.properties['NAME_2']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Huyen_3'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Rangeage = document.createElement('div');
+            div_Rangeage.id = "div_Rangeage";
+            div_Rangeage.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Rangeage);
+            sel_Rangeage = document.createElement('select');
+            sel_Rangeage.multiple = true;
+            sel_Rangeage.size = 6;
+            sel_Rangeage.id = "sel_Rangeage";
+            var Rangeage_options_str = "<option value='' unselected></option>";
+            sel_Rangeage.onchange = function(){filterFunc()};
+            Rangeage_options_str  += '<option value="NULL">NULL</option>';
+            Rangeage_options_str  += '<option value="100-300">100-300</option>';
+            Rangeage_options_str  += '<option value="300-500">300-500</option>';
+            Rangeage_options_str  += '<option value="50-100">50-100</option>';
+            Rangeage_options_str  += '<option value="<50"><50</option>';
+            Rangeage_options_str  += '<option value=">500">>500</option>';
+            sel_Rangeage.innerHTML = Rangeage_options_str;
+            div_Rangeage.appendChild(sel_Rangeage);
+            var lab_Rangeage = document.createElement('div');
+            lab_Rangeage.innerHTML = 'Range age';
+            lab_Rangeage.className = 'filterlabel';
+            div_Rangeage.appendChild(lab_Rangeage);
+            var reset_Rangeage = document.createElement('div');
+            reset_Rangeage.innerHTML = 'clear filter';
+            reset_Rangeage.className = 'filterlabel';
+            reset_Rangeage.onclick = function() {
+                var options = document.getElementById("sel_Rangeage").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_Rangeage.appendChild(reset_Rangeage);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Huyen = document.createElement('div');
+            div_Huyen.id = "div_Huyen";
+            div_Huyen.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Huyen);
+            sel_Huyen = document.createElement('select');
+            sel_Huyen.multiple = true;
+            sel_Huyen.size = 10;
+            sel_Huyen.id = "sel_Huyen";
+            var Huyen_options_str = "<option value='' unselected></option>";
+            sel_Huyen.onchange = function(){filterFunc()};
+            Huyen_options_str  += '<option value="NULL">NULL</option>';
+            Huyen_options_str  += '<option value="HUYỆN CHÂU THÀNH">HUYỆN CHÂU THÀNH</option>';
+            Huyen_options_str  += '<option value="HUYỆN KẾ SÁCH">HUYỆN KẾ SÁCH</option>';
+            Huyen_options_str  += '<option value="HUYỆN LONG PHÚ">HUYỆN LONG PHÚ</option>';
+            Huyen_options_str  += '<option value="HUYỆN MỸ TÚ">HUYỆN MỸ TÚ</option>';
+            Huyen_options_str  += '<option value="HUYỆN MỸ XUYÊN">HUYỆN MỸ XUYÊN</option>';
+            Huyen_options_str  += '<option value="HUYỆN NGÃ NĂM">HUYỆN NGÃ NĂM</option>';
+            Huyen_options_str  += '<option value="HUYỆN THẠNH TRỊ">HUYỆN THẠNH TRỊ</option>';
+            Huyen_options_str  += '<option value="HUYỆN TRẦN ĐỀ">HUYỆN TRẦN ĐỀ</option>';
+            Huyen_options_str  += '<option value="THÀNH PHỐ SÓC TRĂNG">THÀNH PHỐ SÓC TRĂNG</option>';
+            Huyen_options_str  += '<option value="THỊ XÃ VĨNH CHÂU">THỊ XÃ VĨNH CHÂU</option>';
+            sel_Huyen.innerHTML = Huyen_options_str;
+            div_Huyen.appendChild(sel_Huyen);
+            var lab_Huyen = document.createElement('div');
+            lab_Huyen.innerHTML = 'Huyen';
+            lab_Huyen.className = 'filterlabel';
+            div_Huyen.appendChild(lab_Huyen);
+            var reset_Huyen = document.createElement('div');
+            reset_Huyen.innerHTML = 'clear filter';
+            reset_Huyen.className = 'filterlabel';
+            reset_Huyen.onclick = function() {
+                var options = document.getElementById("sel_Huyen").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_Huyen.appendChild(reset_Huyen);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Classifica = document.createElement('div');
+            div_Classifica.id = "div_Classifica";
+            div_Classifica.className= "filterselect";
+            document.getElementById("menu").appendChild(div_Classifica);
+            sel_Classifica = document.createElement('select');
+            sel_Classifica.multiple = true;
+            sel_Classifica.size = 4;
+            sel_Classifica.id = "sel_Classifica";
+            var Classifica_options_str = "<option value='' unselected></option>";
+            sel_Classifica.onchange = function(){filterFunc()};
+            Classifica_options_str  += '<option value="NULL">NULL</option>';
+            Classifica_options_str  += '<option value="Chưa phân hạng">Chưa phân hạng</option>';
+            Classifica_options_str  += '<option value="Cấp quốc gia">Cấp quốc gia</option>';
+            Classifica_options_str  += '<option value="Cấp tỉnh">Cấp tỉnh</option>';
+            sel_Classifica.innerHTML = Classifica_options_str;
+            div_Classifica.appendChild(sel_Classifica);
+            var lab_Classifica = document.createElement('div');
+            lab_Classifica.innerHTML = 'Classifica';
+            lab_Classifica.className = 'filterlabel';
+            div_Classifica.appendChild(lab_Classifica);
+            var reset_Classifica = document.createElement('div');
+            reset_Classifica.innerHTML = 'clear filter';
+            reset_Classifica.className = 'filterlabel';
+            reset_Classifica.onclick = function() {
+                var options = document.getElementById("sel_Classifica").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_Classifica.appendChild(reset_Classifica);
+        resetLabels([layer_Huyen_3]);
+        map.on("zoomend", function(){
+            resetLabels([layer_Huyen_3]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_Huyen_3]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_Huyen_3]);
+        });
+        </script>
+    </body>
+</html>
